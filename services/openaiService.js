@@ -4,24 +4,32 @@ const { OpenAI } = require('openai');
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-/**
- * Generar respuesta a partir de la consulta del chat.
- * Si el vehículo no existe, se retorna un mensaje personalizado.
- */
-exports.getChatResponse = async (consulta, vehiculoInfo) => {
-    // Construir respuesta inicial basada en la información del vehículo
-    const respuestaVehiculo = `El vehículo con placa ${vehiculoInfo.placa} es un ${vehiculoInfo.marca} ${vehiculoInfo.modelo}, color ${vehiculoInfo.color}, con serie ${vehiculoInfo.serie}.`;
-  
+class OpenAIService {
+  /**
+   * Genera una respuesta utilizando OpenAI.
+   * @param {string} consulta - Consulta del usuario.
+   * @param {object} vehiculoInfo - Información del vehículo.
+   * @returns {Promise<object>}
+   */
+  async getChatResponse(consulta, vehiculoInfo) {
     try {
+      // Se integra la consulta y la información del vehículo en un solo mensaje
+      const promptUsuario = `Consulta: ${consulta}. Información del vehículo: Placa: ${vehiculoInfo.placa}, Marca: ${vehiculoInfo.marca}, Modelo: ${vehiculoInfo.modelo}, Serie: ${vehiculoInfo.serie}, Color: ${vehiculoInfo.color}. Por favor, utiliza estos datos para proporcionar una respuesta completa y detallada.`;
+
       const aiResponse = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
-          { role: "system", content: "Eres un asistente experto en información vehicular basado en una base de datos de vehículos." },
-          { role: "user", content: consulta },
-          { role: "assistant", content: respuestaVehiculo }
+          {
+            role: "system",
+            content: "Eres un asistente experto en información vehicular. Utiliza la información proporcionada para generar respuestas precisas y completas."
+          },
+          {
+            role: "user",
+            content: promptUsuario
+          }
         ]
       });
-  
+
       return {
         respuesta: aiResponse.choices[0].message.content,
         metodologia: "Este agente fue entrenado utilizando modelos de lenguaje de OpenAI y estrategias de retroalimentación mediante respuestas basadas en datos de vehículos."
@@ -33,5 +41,7 @@ exports.getChatResponse = async (consulta, vehiculoInfo) => {
         metodologia: "Error en la consulta al modelo de OpenAI."
       };
     }
-  };
-  
+  }
+}
+
+module.exports = new OpenAIService();

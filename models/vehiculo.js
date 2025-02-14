@@ -1,5 +1,6 @@
+// backend/models/vehiculo.js
 const { DataTypes } = require('sequelize');
-const sequelize = require('../services/sequelize'); // crearemos este servicio para instanciar Sequelize
+const sequelize = require('../services/sequelize');
 
 const Vehiculo = sequelize.define('Vehiculo', {
   placa: {

@@ -4,52 +4,50 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const sequelize = require('./services/sequelize');
 
-// Importar rutas
+// Rutas
 const vehiculoRoutes = require('./routes/vehiculoRoutes');
+const openaiService = require('./services/openaiService');
+
+// Middleware de manejo de errores
+const errorHandler = require('./middlewares/errorHandler');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middlewares
+// Middlewares globales
 app.use(cors());
 app.use(bodyParser.json());
 
-// Rutas
+// Rutas de API
 app.use('/vehiculos', vehiculoRoutes);
 
-// Ruta para el chat (por ejemplo, /chat)
-app.post('/chat', async (req, res) => {
-    const { consulta, placa } = req.body;
-    const Vehiculo = require('./models/vehiculo');
+// Ruta para el chat
+app.post('/chat', async (req, res, next) => {
+  const { consulta, placa } = req.body;
+  const vehiculoRepository = require('./repositories/vehiculoRepository');
   
-    try {
-      // Buscar vehículo en la base de datos
-      const vehiculoInfo = await Vehiculo.findOne({ where: { placa } });
+  try {
+    const vehiculoInfo = await vehiculoRepository.findByPlaca(placa);
   
-      if (!vehiculoInfo) {
-        return res.json({
-          respuesta: 'No existe información para el vehículo consultado.',
-          metodologia: 'La respuesta se genera validando la existencia del vehículo en la base de datos antes de consultar el modelo de lenguaje.'
-        });
-      }
-  
-      // Si existe el vehículo, generar la respuesta con OpenAI
-      const openaiService = require('./services/openaiService');
-      const respuestaChat = await openaiService.getChatResponse(consulta, vehiculoInfo);
-  
-      res.json(respuestaChat);
-    } catch (error) {
-      console.error("Error en el servidor:", error);
-      res.status(500).json({
-        respuesta: "Hubo un error al procesar la solicitud.",
-        metodologia: "Error en la validación de la base de datos o en la llamada a OpenAI."
+    if (!vehiculoInfo) {
+      return res.status(404).json({
+        respuesta: 'No existe información para el vehículo consultado.',
+        metodologia: 'Se valida la existencia del vehículo antes de procesar la consulta.'
       });
     }
-  });
   
+    const respuestaChat = await openaiService.getChatResponse(consulta, vehiculoInfo);
+    res.json(respuestaChat);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Middleware de errores (siempre al final de la cadena de middlewares)
+app.use(errorHandler);
 
 // Sincronizar la base de datos y arrancar el servidor
-sequelize.sync({ force: false })  // force:true recrea tablas (útil en desarrollo)
+sequelize.sync({ force: false })  // force: true recrea tablas (útil en desarrollo)
   .then(() => {
     console.log('Base de datos sincronizada');
     app.listen(PORT, () => console.log(`Servidor corriendo en el puerto ${PORT}`));
