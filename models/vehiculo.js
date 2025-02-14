@@ -1,4 +1,3 @@
-// backend/models/vehiculo.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../services/sequelize');
 

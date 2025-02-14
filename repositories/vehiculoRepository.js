@@ -1,4 +1,3 @@
-// backend/repositories/vehiculoRepository.js
 const Vehiculo = require('../models/vehiculo');
 
 class VehiculoRepository {

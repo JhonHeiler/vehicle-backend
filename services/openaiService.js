@@ -1,4 +1,3 @@
-// backend/services/openaiService.js
 require('dotenv').config();
 const { OpenAI } = require('openai');
 
@@ -6,14 +5,14 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 class OpenAIService {
   /**
-   * Genera una respuesta utilizando OpenAI.
-   * @param {string} consulta - Consulta del usuario.
-   * @param {object} vehiculoInfo - Información del vehículo.
+   * 
+   * @param {string} consulta 
+   * @param {object} vehiculoInfo 
    * @returns {Promise<object>}
    */
   async getChatResponse(consulta, vehiculoInfo) {
     try {
-      // Se integra la consulta y la información del vehículo en un solo mensaje
+      
       const promptUsuario = `Consulta: ${consulta}. Información del vehículo: Placa: ${vehiculoInfo.placa}, Marca: ${vehiculoInfo.marca}, Modelo: ${vehiculoInfo.modelo}, Serie: ${vehiculoInfo.serie}, Color: ${vehiculoInfo.color}. Por favor, utiliza estos datos para proporcionar una respuesta completa y detallada.`;
 
       const aiResponse = await openai.chat.completions.create({

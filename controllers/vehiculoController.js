@@ -1,4 +1,3 @@
-// backend/controllers/vehiculoController.js
 const vehiculoRepository = require('../repositories/vehiculoRepository');
 
 class VehiculoController {
